@@ -1,0 +1,98 @@
+<ng-template #loadingScreen>
+  <ng-template #loadingIcon>
+    <i class="fs-32" nz-icon nzType="loading"></i>
+  </ng-template>
+  <nz-spin
+    *ngIf="isLoading"
+    class="d-flex justify-content-center align-items-center h-100 loading-screen"
+    nzSimple
+    [nzIndicator]="loadingIcon"
+    nzTip="Loading"
+  >
+  </nz-spin>
+</ng-template>
+<div
+  *ngIf="collectionData.length > 0 && meCollectionInfo && solanaCollectionInfo"
+>
+  <div nz-row nzJustify="center">
+    <div nz-col nzSpan="12">
+      <img
+        class="collection-img"
+        [src]="solanaCollectionInfo.collection.image_url"
+      />
+    </div>
+    <div nz-col nzSpan="12">
+      <nz-descriptions [nzTitle]="solanaCollectionInfo.collection.name">
+        <nz-descriptions-item nzTitle="Floor Price"
+          >{{
+            meCollectionInfo.floorPrice / 1000000000
+          }}
+          ◎</nz-descriptions-item
+        >
+        <nz-descriptions-item nzTitle="Total Volume"
+          >{{ meCollectionInfo.volumeAll / 1000000000 }} ◎</nz-descriptions-item
+        >
+        <nz-descriptions-item nzTitle="Listed">{{
+          meCollectionInfo.listedCount
+        }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Owners">{{
+          solanaCollectionInfo.collection.stats.num_owners
+        }}</nz-descriptions-item>
+      </nz-descriptions>
+    </div>
+  </div>
+  <nz-collapse>
+    <nz-collapse-panel nzHeader="Collection Token">
+      <div nz-row nzJustify="space-around">
+        <div
+          nz-col
+          nzSpan="8"
+          class="collection-col"
+          *ngFor="let collection of collectionData"
+        >
+          <nz-card
+            nzHoverable
+            style="width: 240px"
+            [nzCover]="coverTemplate"
+            (click)="loadNFTInfo(collection.tokenMint)"
+          >
+            <nz-card-meta
+              [nzTitle]="collection.tokenAddress"
+              [nzDescription]="collection.price.toString()"
+            ></nz-card-meta>
+          </nz-card>
+          <ng-template #coverTemplate>
+            <img alt="example" [src]="collection.extra.img" />
+          </ng-template>
+        </div>
+      </div>
+      <div nz-row nzJustify="center">
+        <button (click)="loadCollection()">Load More</button>
+      </div>
+    </nz-collapse-panel>
+    <nz-collapse-panel nzHeader="Collection Activities">
+      <cdk-virtual-scroll-viewport itemSize="70" class="infinite-container">
+        <nz-list>
+          <nz-list-header>
+            <th>Name</th>
+            <th>Transaction Id</th>
+            <th>Transaction Type</th>
+            <th>Time</th>
+            <th>Amount</th>
+            <th>Buyer</th>
+            <th>Seller</th></nz-list-header
+          >
+          <nz-list-item *cdkVirtualFor="let activity of collectionActivities">
+            <td>{{ solanaCollectionInfo.collection.name }}</td>
+            <td>{{ applyAddressMask(activity.signature) }}</td>
+            <td>{{ activity.type }}</td>
+            <td>{{ activity.blockTime }}</td>
+            <td>{{ activity.price }}</td>
+            <td>{{ applyAddressMask(activity.buyer) }}</td>
+            <td>{{ applyAddressMask(activity.seller) }}</td>
+          </nz-list-item>
+        </nz-list>
+      </cdk-virtual-scroll-viewport>
+    </nz-collapse-panel>
+  </nz-collapse>
+</div>

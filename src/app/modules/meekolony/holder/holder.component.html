@@ -1,0 +1,37 @@
+<nz-spin [nzSpinning]="isLoading">
+  <form nz-form [formGroup]="searchForm" (submit)="onSubmit()">
+    <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
+      <input
+        formControlName="walletAddress"
+        type="text"
+        nz-input
+        placeholder="Input wallet address here"
+      />
+    </nz-input-group>
+    <ng-template #suffixIconButton>
+      <button nz-button nzType="primary" type="submit" nzSearch>
+        <span nz-icon nzType="search"></span>
+      </button>
+    </ng-template>
+  </form>
+  <br />
+  <br />
+  <div nz-row nzJustify="space-around" *ngIf="nftData.length > 0">
+    <div nz-col nzSpan="8" class="collection-col" *ngFor="let nft of nftData">
+      <nz-card
+        nzHoverable
+        style="width: 240px"
+        [nzCover]="coverTemplate"
+        (click)="loadNFTInfo(nft.address.toString())"
+      >
+        <nz-card-meta [nzTitle]="nft.name"></nz-card-meta>
+      </nz-card>
+      <ng-template #coverTemplate>
+        <img alt="example" [src]="nft.json?.image" />
+      </ng-template>
+    </div>
+  </div>
+  <div nz-row nzJustify="center" *ngIf="nftData.length > 0">
+    <button (click)="loadNFTs()">Load More</button>
+  </div>
+</nz-spin>

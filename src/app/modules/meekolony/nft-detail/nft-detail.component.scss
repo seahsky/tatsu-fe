@@ -1,0 +1,19 @@
+img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+p {
+    width: 100%;
+}
+
+th, td {
+    width: 14.28%;
+    text-align: left;
+}
+
+.infinite-container {
+    height: 300px;
+    border: 1px solid grey;
+    border-radius: 4px;
+}

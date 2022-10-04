@@ -1,0 +1,41 @@
+<div nz-row>
+  <div nz-col nzSpan="12">
+    <div nz-row>
+      <img [src]="nft.json?.image" width="auto" />
+    </div>
+    <div nz-row>"price"</div>
+    <div nz-row>
+      <p *ngFor="let attribute of nft.json?.attributes">
+        {{ attribute.trait_type }} : {{ attribute.value }}
+      </p>
+    </div>
+  </div>
+  <div nz-col nzSpan="12">
+    <p>Mint Address : {{ nft.address }}</p>
+    <p>Metadata Address : {{ nft.metadataAddress }}</p>
+    <p>Update Authority Address : {{ nft.updateAuthorityAddress }}</p>
+
+    <cdk-virtual-scroll-viewport itemSize="70" class="infinite-container">
+      <nz-list>
+        <nz-list-header>
+          <th>Name</th>
+          <th>Transaction Id</th>
+          <th>Transaction Type</th>
+          <th>Time</th>
+          <th>Amount</th>
+          <th>Buyer</th>
+          <th>Seller</th></nz-list-header
+        >
+        <nz-list-item *cdkVirtualFor="let activity of nftActivities">
+          <td>{{ nft.name }}</td>
+          <td>{{ applyAddressMask(activity.signature) }}</td>
+          <td>{{ activity.type }}</td>
+          <td>{{ activity.blockTime }}</td>
+          <td>{{ activity.price }}</td>
+          <td>{{ applyAddressMask(activity.buyer) }}</td>
+          <td>{{ applyAddressMask(activity.seller) }}</td>
+        </nz-list-item>
+      </nz-list>
+    </cdk-virtual-scroll-viewport>
+  </div>
+</div>
