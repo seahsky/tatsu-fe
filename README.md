@@ -1,6 +1,13 @@
-# TatsuFe
+# TatsuFe - Frontend Project for Tatsumeeko's assignment
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.2.4.
+
+## Pages
+- Meekolony Collection Page
+This page shows overall collection info for Meekolony, kinda like a simplified MagicEden interface.
+
+- Meekolony Holder Page
+This page shows the Meekolony NFTs that a particular user holds. It should contain a grid view of the Meekolony NFTs. When a user clicks on the NFT, relevant metadata about the NFT should be shown.
 
 ## Development server
 
