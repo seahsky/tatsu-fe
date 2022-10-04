@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewContainerRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { Nft } from '@metaplex-foundation/js';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import {
@@ -8,6 +8,10 @@ import {
   Subject,
   Observable,
   takeUntil,
+  Subscription,
+  interval,
+  timer,
+  switchMap,
 } from 'rxjs';
 import {
   CollectionListingRequest,
@@ -24,13 +28,14 @@ import { MeekolonyService } from '../meekolony.service';
 import { NftDetailComponent } from '../nft-detail/nft-detail.component';
 import { CollectionViewer, DataSource } from '@angular/cdk/collections';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { ThisReceiver } from '@angular/compiler';
 
 @Component({
   selector: 'app-collection',
   templateUrl: './collection.component.html',
   styleUrls: ['./collection.component.scss'],
 })
-export class CollectionComponent implements OnInit {
+export class CollectionComponent implements OnInit, OnDestroy {
   collectionData: MagicEdenCollection[] = [];
   meCollectionInfo!: MagicEdenCollectionStats;
   solanaCollectionInfo!: SolanaCollectionStats;
@@ -40,6 +45,9 @@ export class CollectionComponent implements OnInit {
   pageSize = 12;
   isLoading = false;
   private destroy$ = new Subject();
+  refreshInterval!: number;
+  listingSubscription!: Subscription;
+  activitySubscription!: Subscription;
 
   constructor(
     private meekoService: MeekolonyService,
@@ -48,10 +56,8 @@ export class CollectionComponent implements OnInit {
     private messageService: NzMessageService
   ) {
     this.defaultCollectionSymbol = this.meekoService.defaultCollectionSymbol;
-    this.collectionActivities = new CollectionActivityDataSource(
-      this.meekoService,
-      this.defaultCollectionSymbol
-    );
+    this.refreshInterval = this.meekoService.refreshInterval;
+    this.refreshComponent();
   }
 
   ngOnInit(): void {
@@ -63,6 +69,13 @@ export class CollectionComponent implements OnInit {
       .subscribe(() => {
         this.messageService.info('All activites has been loaded');
       });
+  }
+
+  ngOnDestroy(): void {
+    this.listingSubscription?.unsubscribe();
+    this.activitySubscription?.unsubscribe();
+    this.destroy$.next(0);
+    this.destroy$.complete();
   }
 
   loadCollectionInfo() {
@@ -86,15 +99,28 @@ export class CollectionComponent implements OnInit {
       .add(() => (this.isLoading = false));
   }
 
-  loadCollection() {
+  refreshComponent(): void {
     this.isLoading = true;
+    this.pageIndex = 1;
+    this.collectionData = [];
+    this.collectionActivities = new CollectionActivityDataSource(
+      this.meekoService,
+      this.defaultCollectionSymbol
+    );
+  }
 
-    this.meekoService
-      .getCollectionListing({
-        collectionSymbol: this.defaultCollectionSymbol,
-        offset: this.getCurrentOffset(),
-        limit: this.pageSize,
-      } as CollectionListingRequest)
+  loadCollection() {
+    this.listingSubscription = timer(0, this.refreshInterval)
+      .pipe(
+        switchMap((x) => {
+          this.refreshComponent();
+          return this.meekoService.getCollectionListing({
+            collectionSymbol: this.defaultCollectionSymbol,
+            offset: this.getCurrentOffset(),
+            limit: this.pageSize,
+          } as CollectionListingRequest);
+        })
+      )
       .subscribe((listingData: MagicEdenCollection[]) => {
         if (listingData.length > 0) {
           this.pageIndex++;
@@ -104,8 +130,9 @@ export class CollectionComponent implements OnInit {
             'All NFTs for this collection has been loaded'
           );
         }
-      })
-      .add(() => (this.isLoading = false));
+
+        this.isLoading = false;
+      });
   }
 
   getCurrentOffset(): number {
@@ -114,10 +141,6 @@ export class CollectionComponent implements OnInit {
     }
 
     return this.pageIndex * this.pageSize;
-  }
-
-  loadMoreCollection() {
-    this.loadCollection();
   }
 
   loadNFTInfo(mintAddress: string) {

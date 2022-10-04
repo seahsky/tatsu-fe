@@ -11,6 +11,10 @@
     margin-right: auto;
   }
 
+  nz-layout.ant-layout-has-sider {
+    height: 100%;
+  }
+
   nz-header {
     background: #fff;
     padding: 0;
@@ -18,6 +22,7 @@
 
   nz-content {
     margin: 0 16px;
+    overflow-y: scroll;
   }
 
   nz-breadcrumb {

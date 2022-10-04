@@ -1,8 +1,9 @@
-import { Component, OnInit, ViewContainerRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Metadata, JsonMetadata, Nft } from '@metaplex-foundation/js';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
+import { Subscription, switchMap, timer } from 'rxjs';
 import {
   GetNFTByAddressRequest,
   GetNFTsByAddressRequest,
@@ -15,13 +16,15 @@ import { NftDetailComponent } from '../nft-detail/nft-detail.component';
   templateUrl: './holder.component.html',
   styleUrls: ['./holder.component.scss'],
 })
-export class HolderComponent implements OnInit {
+export class HolderComponent implements OnInit, OnDestroy {
   searchForm!: FormGroup;
   isLoading = false;
   pageIndex = 1;
   pageSize = 12;
   nftData: Nft[] = [];
   currentWalletAddress = '';
+  refreshInterval!: number;
+  listingSubscription!: Subscription;
 
   constructor(
     private meekoService: MeekolonyService,
@@ -30,12 +33,17 @@ export class HolderComponent implements OnInit {
     private fb: FormBuilder,
     private messageService: NzMessageService
   ) {
+    this.refreshInterval = this.meekoService.refreshInterval;
     this.searchForm = this.fb.group({
       walletAddress: [''],
     });
   }
 
   ngOnInit(): void {}
+
+  ngOnDestroy(): void {
+    this.listingSubscription?.unsubscribe();
+  }
 
   getCurrentOffset(): number {
     if (this.pageIndex == 1) {
@@ -45,16 +53,28 @@ export class HolderComponent implements OnInit {
     return this.pageIndex * this.pageSize;
   }
 
+  refreshComponent(): void {
+    this.isLoading = true;
+    this.pageIndex = 1;
+    this.nftData = [];
+  }
+
   loadNFTInfo(mintAddress: string) {
     this.isLoading = true;
 
     const serviceRequest = { mintAddress } as GetNFTByAddressRequest;
-    this.meekoService
-      .getNFTInfoByMintAddress(serviceRequest)
+
+    this.listingSubscription = timer(0, this.refreshInterval)
+      .pipe(
+        switchMap((x) => {
+          this.refreshComponent();
+          return this.meekoService.getNFTInfoByMintAddress(serviceRequest);
+        })
+      )
       .subscribe((data: Nft) => {
         this.openNFTInfoModal(data);
-      })
-      .add(() => (this.isLoading = false));
+        this.isLoading = false;
+      });
   }
 
   openNFTInfoModal(nft: Nft): void {

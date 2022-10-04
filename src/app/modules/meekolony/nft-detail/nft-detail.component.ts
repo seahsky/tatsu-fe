@@ -9,7 +9,15 @@ import { NFTActivitesListingRequest } from 'src/app/interfaces/api-request';
 import { MagicEdenActivity } from 'src/app/interfaces/api-response';
 import { MeekolonyService } from '../meekolony.service';
 import { CollectionViewer, DataSource } from '@angular/cdk/collections';
-import { BehaviorSubject, Subject, Observable, takeUntil } from 'rxjs';
+import {
+  BehaviorSubject,
+  Subject,
+  Observable,
+  takeUntil,
+  Subscription,
+  switchMap,
+  timer,
+} from 'rxjs';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
 @Component({
@@ -25,6 +33,8 @@ export class NftDetailComponent implements OnInit, OnDestroy {
   pageSize = 10;
   isLoading = false;
   private destroy$ = new Subject();
+  refreshInterval!: number;
+  activitySubscription!: Subscription;
 
   constructor(
     private meekoService: MeekolonyService,
@@ -33,13 +43,16 @@ export class NftDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     if (this.nft) {
-      this.nftActivities = new NFTActivityDataSource(
-        this.meekoService,
-        this.nft.address.toString()
-      );
-      this.nftActivities
-        .completed()
-        .pipe(takeUntil(this.destroy$))
+      this.refreshComponent();
+      this.activitySubscription = timer(0, 10000)
+        .pipe(
+          switchMap((x) => {
+            this.refreshComponent();
+            return this.nftActivities
+              .completed()
+              .pipe(takeUntil(this.destroy$));
+          })
+        )
         .subscribe(() => {
           this.messageService.info('All activites has been loaded');
         });
@@ -47,8 +60,17 @@ export class NftDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.activitySubscription?.unsubscribe();
     this.destroy$.next(0);
     this.destroy$.complete();
+  }
+
+  refreshComponent(): void {
+    this.pageIndex = 1;
+    this.nftActivities = new NFTActivityDataSource(
+      this.meekoService,
+      this.nft.address.toString()
+    );
   }
 
   getCurrentOffset(pageIndex = this.pageIndex): number {

@@ -15,14 +15,23 @@ import {
   MagicEdenCollectionStats,
   SolanaCollectionStats,
 } from 'src/app/interfaces/api-response';
+import { environment } from 'src/environments/environment';
 
 @Injectable()
 export class MeekolonyService {
-  private _defaultCollectionSymbol = 'meekolony';
-  constructor(private http: HttpClient) {}
+  private _defaultCollectionSymbol = '';
+  private _refreshInterval = 300000;
+  constructor(private http: HttpClient) {
+    this._defaultCollectionSymbol = environment.defaultCollectionSymbol;
+    this._refreshInterval = environment.refreshInterval;
+  }
 
   get defaultCollectionSymbol() {
     return this._defaultCollectionSymbol;
+  }
+
+  get refreshInterval() {
+    return this._refreshInterval;
   }
 
   getSolanaCollectionInfo(request: CollectionSymbolRequest) {
