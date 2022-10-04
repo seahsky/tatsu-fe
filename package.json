@@ -25,6 +25,7 @@
     "assert": "^2.0.0",
     "browserify-zlib": "^0.2.0",
     "crypto-browserify": "^3.12.0",
+    "dotenv": "^16.0.3",
     "https-browserify": "^1.0.0",
     "ng-zorro-antd": "^14.0.0",
     "os-browserify": "^0.3.0",
