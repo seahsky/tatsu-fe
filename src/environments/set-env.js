@@ -13,7 +13,7 @@ const setEnv = () => {
   const envConfigFile = `export const environment = {
     backendApiUrl: '${process.env.BACKEND_API_URL}',
     defaultCollectionSymbol: '${process.env.DEFAULT_COLLECTION_SYMBOL}',
-    refreshInterval: '${process.env.REFRESH_INTERVAL}',
+    refreshInterval: '${parseInt(process.env.REFRESH_INTERVAL)}',
     appVersion: '${appVersion}',
     production: true,
   };
