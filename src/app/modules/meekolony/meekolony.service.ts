@@ -23,14 +23,14 @@ export class MeekolonyService {
   private _refreshInterval = 300000;
   constructor(private http: HttpClient) {
     this._defaultCollectionSymbol = environment.defaultCollectionSymbol;
-    this._refreshInterval = environment.refreshInterval;
+    this._refreshInterval = +environment.refreshInterval;
   }
 
-  get defaultCollectionSymbol() {
+  get defaultCollectionSymbol(): string {
     return this._defaultCollectionSymbol;
   }
 
-  get refreshInterval() {
+  get refreshInterval(): number {
     return this._refreshInterval;
   }
 
