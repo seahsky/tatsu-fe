@@ -125,14 +125,30 @@ export class CollectionComponent implements OnInit, OnDestroy {
         if (listingData.length > 0) {
           this.pageIndex++;
           this.collectionData.push(...listingData);
+        }
+
+        this.isLoading = false;
+      });
+  }
+
+  loadMoreCollection() {
+    this.meekoService
+      .getCollectionListing({
+        collectionSymbol: this.defaultCollectionSymbol,
+        offset: this.getCurrentOffset(),
+        limit: this.pageSize,
+      } as CollectionListingRequest)
+      .subscribe((listingData: MagicEdenCollection[]) => {
+        if (listingData.length > 0) {
+          this.pageIndex++;
+          this.collectionData.push(...listingData);
         } else {
           this.messageService.info(
             'All NFTs for this collection has been loaded'
           );
         }
-
-        this.isLoading = false;
-      });
+      })
+      .add(() => (this.isLoading = false));
   }
 
   getCurrentOffset(): number {
